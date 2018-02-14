@@ -3,7 +3,7 @@
         "ssh_name": "temp",
         "ssh_pass": "late",
         "hostname": "template",
-        "vm_name": "Template_demo",
+        "vm_name": "TEMPLATE_demo",
         "disk_size": "5000"
     },
 

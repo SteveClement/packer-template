@@ -3,7 +3,7 @@
         "ssh_name": "temp",
         "ssh_pass": "late",
         "hostname": "template",
-        "vm_name": "Template_demo",
+        "vm_name": "TEMPLATE_demo",
         "disk_size": "5000"
     },
 
@@ -16,7 +16,9 @@
 
         "vboxmanage": [
             ["modifyvm", "{{.Name}}", "--vram", "32"],
-            ["modifyvm", "{{.Name}}", "--memory", "2048"]
+            ["modifyvm", "{{.Name}}", "--memory", "2048"],
+            ["modifyvm", "{{.Name}}", "--nic1", "nat"],
+            ["modifyvm", "{{.Name}}", "--nicr2", "hostonly", "--hostonlyadapter2", "vboxnet0"]
         ],
 
         "disk_size": "{{user `disk_size`}}",
@@ -38,7 +40,7 @@
 
         "boot_command" : [
             "<esc><esc><enter><wait>",
-            "/install/vmlinuz noapic ",
+            "/install/vmlinuz noapic text",
             "preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg ",
             "debian-installer=en_US auto locale=en_US kbd-chooser/method=us ",
             "hostname={{user `hostname`}} ",
@@ -96,6 +98,16 @@
         "inline": [
             "echo '%sudo    ALL=(ALL)  NOPASSWD:ALL' >> /etc/sudoers"
         ]
+    },
+    {
+      "type": "file",
+      "source": "./scripts/static-ip.sh",
+      "destination": "/tmp/static-ip.sh"
+    },
+    {
+      "type": "shell",
+      "execute_command": "echo '{{user `ssh_pass`}}' | {{ .Vars }} sudo -E -S sh '{{ .Path }}'",
+      "inline": ["chmod 755 /tmp/static-ip.sh && /tmp/static-ip.sh {{user `ip`}} 192.168.56.69 255.255.255.0"]
     },
     {
         "type": "shell",

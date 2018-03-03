@@ -14,15 +14,25 @@ PACKER_VM="TEMPLATE"
 NAME="packer-template"
 
 # Configure your user and remote server
-REMOTE=-1
+REMOTE=0
 REL_USER="template-release"
 REL_SERVER="templateServerFQDN"
+
+# GPG Sign
+GPG_ENABLED=0
+GPG_KEY="0x9BE4AEE9"
+
+# Enable debug for packer, omit -debug to disable
+##PACKER_DEBUG="-debug"
 
 # Enable logging for packer
 PACKER_LOG=1
 
 # Make sure we have a current work directory
 PWD=`pwd`
+
+# Make sure log dir exists (-p quiets if exists)
+mkdir -p ${PWD}/log
 
 # Place holder, this fn() should be used to anything signing related
 function signify()
@@ -34,6 +44,22 @@ fi
 
 }
 
+function removeAll()
+{
+  # Remove files for next run
+  rm -r output-virtualbox-iso
+  rm -r output-vmware-iso
+  rm *.checksum *.zip *.sha*
+  rm ${PACKER_NAME}-deploy.json
+  rm packer_virtualbox-iso_virtualbox-iso_sha1.checksum.asc
+  rm packer_virtualbox-iso_virtualbox-iso_sha256.checksum.asc
+  rm packer_virtualbox-iso_virtualbox-iso_sha384.checksum.asc
+  rm packer_virtualbox-iso_virtualbox-iso_sha512.checksum.asc
+  rm ${PACKER_VM}_${VER}@${LATEST_COMMIT}-vmware.zip.asc
+}
+
+removeAll
+
 # Check if latest build is still up to date, if not, roll and deploy new
 if [ "${LATEST_COMMIT}" != "$(cat /tmp/${PACKER_NAME}-latest.sha)" ]; then
 
@@ -43,12 +69,12 @@ if [ "${LATEST_COMMIT}" != "$(cat /tmp/${PACKER_NAME}-latest.sha)" ]; then
   cat ${PACKER_NAME}.json| sed "s|\"vm_name\": \"${PACKER_VM}_demo\",|\"vm_name\": \"${PACKER_VM}_${VER}@${LATEST_COMMIT}\",|" > ${PACKER_NAME}-deploy.json
 
   # Build virtualbox VM set
-  PACKER_LOG_PATH="${PWD}/packerlog-vbox.txt"
-  /usr/local/bin/packer build -only=virtualbox-iso ${PACKER_NAME}-deploy.json
+  PACKER_LOG_PATH="${PWD}/log/packerlog-vbox.txt"
+  /usr/local/bin/packer build ${PACKER_DEBUG} -only=virtualbox-iso ${PACKER_NAME}-deploy.json
 
   # Build vmware VM set
-  PACKER_LOG_PATH="${PWD}/packerlog-vmware.txt"
-  /usr/local/bin/packer build -only=vmware-iso ${PACKER_NAME}-deploy.json
+  PACKER_LOG_PATH="${PWD}/log/packerlog-vmware.txt"
+  /usr/local/bin/packer build ${PACKER_DEBUG} -only=vmware-iso ${PACKER_NAME}-deploy.json
 
   # ZIPup all the vmware stuff
   zip -r ${PACKER_VM}_${VER}@${LATEST_COMMIT}-vmware.zip  packer_vmware-iso_vmware-iso_sha1.checksum packer_vmware-iso_vmware-iso_sha512.checksum output-vmware-iso
@@ -67,8 +93,8 @@ if [ "${LATEST_COMMIT}" != "$(cat /tmp/${PACKER_NAME}-latest.sha)" ]; then
 
   # Sign and transfer files
   for FILE in ${FILE_LIST}; do
-    gpg --armor --output ${FILE}.asc --detach-sig ${FILE}
-    if [ "${REMOTE}" != "-1" ]; then
+    gpg --local-user ${GPG_KEY} --armor --output ${FILE}.asc --detach-sig ${FILE}
+    if [ "${REMOTE}" != "0" ]; then
         echo "Uploading to ${REL_USER}@${REL_SERVER}"
         ##rsync -azv --progress ${FILE} ${REL_USER}@${REL_SERVER}:export/${PACKER_VM}_${VER}@${LATEST_COMMIT}
         ##rsync -azv --progress ${FILE}.asc ${REL_USER}@${REL_SERVER}:export/${PACKER_VM}_${VER}@${LATEST_COMMIT}
@@ -81,16 +107,6 @@ if [ "${LATEST_COMMIT}" != "$(cat /tmp/${PACKER_NAME}-latest.sha)" ]; then
   # The following was an attempt to have a prettier index. Replaced with "fancy-index"
   ##ssh ${REL_USER}@${REL_SERVER} cd export ; tree -T "packer-template VM Images" -H https://www.circl.lu/template-images/ -o index.html
 
-  # Remove files for next run
-  ##rm -r output-virtualbox-iso
-  ##rm -r output-vmware-iso
-  ##rm *.checksum *.zip *.sha*
-  rm ${PACKER_NAME}-deploy.json
-  ##rm packer_virtualbox-iso_virtualbox-iso_sha1.checksum.asc
-  ##rm packer_virtualbox-iso_virtualbox-iso_sha256.checksum.asc
-  ##rm packer_virtualbox-iso_virtualbox-iso_sha384.checksum.asc
-  ##rm packer_virtualbox-iso_virtualbox-iso_sha512.checksum.asc
-  ##rm ${PACKER_VM}_${VER}@${LATEST_COMMIT}-vmware.zip.asc
   echo ${LATEST_COMMIT} > /tmp/${PACKER_NAME}-latest.sha
 else
   echo "Current ${NAME} version ${VER}@${LATEST_COMMIT} is up to date."

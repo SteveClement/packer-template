@@ -3,7 +3,7 @@
         "ssh_name": "temp",
         "ssh_pass": "late",
         "hostname": "template",
-        "vm_name": "TEMPLATE_demo",
+        "vm_name": "Template_demo",
         "disk_size": "5000"
     },
 
@@ -16,15 +16,13 @@
 
         "vboxmanage": [
             ["modifyvm", "{{.Name}}", "--vram", "32"],
-            ["modifyvm", "{{.Name}}", "--memory", "2048"],
-            ["modifyvm", "{{.Name}}", "--nic1", "nat"],
-            ["modifyvm", "{{.Name}}", "--nicr2", "hostonly", "--hostonlyadapter2", "vboxnet0"]
+            ["modifyvm", "{{.Name}}", "--memory", "2048"]
         ],
 
         "disk_size": "{{user `disk_size`}}",
 
-        "iso_url": "http://releases.ubuntu.com/17.10/ubuntu-17.10.1-server-amd64.iso",
-        "iso_checksum": "8ff73f1b622276758475c3bd5190b382774626de5a82c50930519381f6c3a3f8",
+        "iso_url": "http://cdimage.ubuntu.com/daily-live/current/bionic-desktop-amd64.iso",
+        "iso_checksum": "0828c70499ccf116225d2755d66d1c07ee75cfa6fd9b7c1b1e41545d9da47a75",
         "iso_checksum_type": "sha256",
 
         "http_directory" : "preseeds",
@@ -40,7 +38,7 @@
 
         "boot_command" : [
             "<esc><esc><enter><wait>",
-            "/install/vmlinuz noapic text",
+            "/install/vmlinuz noapic ",
             "preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg ",
             "debian-installer=en_US auto locale=en_US kbd-chooser/method=us ",
             "hostname={{user `hostname`}} ",
@@ -98,16 +96,6 @@
         "inline": [
             "echo '%sudo    ALL=(ALL)  NOPASSWD:ALL' >> /etc/sudoers"
         ]
-    },
-    {
-      "type": "file",
-      "source": "./scripts/static-ip.sh",
-      "destination": "/tmp/static-ip.sh"
-    },
-    {
-      "type": "shell",
-      "execute_command": "echo '{{user `ssh_pass`}}' | {{ .Vars }} sudo -E -S sh '{{ .Path }}'",
-      "inline": ["chmod 755 /tmp/static-ip.sh && /tmp/static-ip.sh {{user `ip`}} 192.168.56.69 255.255.255.0"]
     },
     {
         "type": "shell",

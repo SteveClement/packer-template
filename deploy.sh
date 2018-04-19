@@ -34,6 +34,13 @@ PWD=`pwd`
 # Make sure log dir exists (-p quiets if exists)
 mkdir -p ${PWD}/log
 
+vm_description='packer-template is a template to check the packer VM generation.'
+vm_version="${VER}"
+
+# Fetching latest LookyLoo LICENSE
+/usr/bin/wget -q -O /tmp/LICENSE-template https://raw.githubusercontent.com/SteveClement/packer-template/master/LICENSE
+
+
 # Place holder, this fn() should be used to anything signing related
 function signify()
 {
@@ -70,11 +77,11 @@ if [ "${LATEST_COMMIT}" != "$(cat /tmp/${PACKER_NAME}-latest.sha)" ]; then
 
   # Build virtualbox VM set
   PACKER_LOG_PATH="${PWD}/log/packerlog-vbox.txt"
-  /usr/local/bin/packer build ${PACKER_DEBUG} -only=virtualbox-iso ${PACKER_NAME}-deploy.json
+  /usr/local/bin/packer build ${PACKER_DEBUG} -var "vm_description=${vm_description}" -var "vm_version=${vm_version}" -only=virtualbox-iso ${PACKER_NAME}-deploy.json
 
   # Build vmware VM set
   PACKER_LOG_PATH="${PWD}/log/packerlog-vmware.txt"
-  /usr/local/bin/packer build ${PACKER_DEBUG} -only=vmware-iso ${PACKER_NAME}-deploy.json
+  /usr/local/bin/packer build ${PACKER_DEBUG} -var "vm_description=${vm_description}" -var "vm_version=${vm_version}" -only=vmware-iso ${PACKER_NAME}-deploy.json
 
   # ZIPup all the vmware stuff
   zip -r ${PACKER_VM}_${VER}@${LATEST_COMMIT}-vmware.zip  packer_vmware-iso_vmware-iso_sha1.checksum packer_vmware-iso_vmware-iso_sha512.checksum output-vmware-iso

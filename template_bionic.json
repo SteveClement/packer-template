@@ -3,8 +3,8 @@
         "ssh_name": "temp",
         "ssh_pass": "late",
         "hostname": "template",
-        "vm_name": "Template_demo",
-        "disk_size": "5000"
+        "vm_name": "TEMPLATE_demo",
+        "disk_size": "10000"
     },
 
     "builders": [{
@@ -14,9 +14,20 @@
         "format": "ova",
         "vm_name": "{{user `vm_name`}}",
 
+        "export_opts":
+          [
+            "--manifest",
+            "--vsys", "0",
+            "--eulafile", "/tmp/LICENSE-template",
+            "--description", "{{user `vm_description`}}",
+            "--version", "{{user `vm_version`}}"
+          ],
+
         "vboxmanage": [
             ["modifyvm", "{{.Name}}", "--vram", "32"],
-            ["modifyvm", "{{.Name}}", "--memory", "2048"]
+            ["modifyvm", "{{.Name}}", "--memory", "2048"],
+            ["modifyvm", "{{.Name}}", "--natpf1", "ssh,tcp,,2222,0.0.0.0,22" ],
+            ["modifyvm", "{{.Name}}", "--natpf1", "http,tcp,,8888,,80" ]
         ],
 
         "disk_size": "{{user `disk_size`}}",
@@ -38,7 +49,7 @@
 
         "boot_command" : [
             "<esc><esc><enter><wait>",
-            "/install/vmlinuz noapic ",
+            "/install/vmlinuz noapic text",
             "preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg ",
             "debian-installer=en_US auto locale=en_US kbd-chooser/method=us ",
             "hostname={{user `hostname`}} ",

@@ -46,6 +46,7 @@
         "ssh_pty" : "true",
 
         "shutdown_command": "echo {{user `ssh_pass`}} | sudo -S shutdown -P now",
+        "shutdown_timeout": "7m",
 
         "boot_command" : [
             "<esc><esc><enter><wait>",

@@ -42,15 +42,13 @@ DEFAULT_GRUB="/etc/default/grub"
 UBUNTU_VERSION="$(lsb_release -r -s)"
 
 # Webserver configuration
-PATH_TO_LOOKY='/home/looky/lookyloo'
-LOOKY_BASEURL=''
+##PATH_TO_LOOKY='/home/looky/lookyloo'
+##LOOKY_BASEURL=''
 FQDN='localhost'
 
 SECRET_KEY="$(openssl rand -hex 32)"
 
-export WORKON_HOME=~/lookyloo
-
-echo "--- Installing Lookyloo… ---"
+echo "--- Installing Template… ---"
 
 # echo "--- Configuring GRUB ---"
 #
@@ -67,7 +65,7 @@ sudo apt-get -qq update
 echo "--- Install base packages ---"
 sudo apt-get -y install curl net-tools gcc git make sudo vim zip python3-dev python3-pip python3-virtualenv virtualenvwrapper > /dev/null 2>&1
 
-echo "--- Retrieving and setting up Lookyloo ---"
+echo "--- Retrieving and setting up Template ---"
 #cd ~looky
 #sudo -u looky git clone https://github.com/SteveClement/lookyloo.git
 #cd $PATH_TO_LOOKY
@@ -81,7 +79,10 @@ echo "--- Retrieving and setting up Lookyloo ---"
 #pip install -r requirements.txt
 #pip install -e .
 
-echo "\e[32mLookyloo is ready\e[0m"
-echo "Login and passwords for the Lookyloo image are the following:"
+echo "--- Install nginx ---"
+sudo apt-get -y install nginx
+
+echo "\e[32mTemplate is ready\e[0m"
+echo "Login and passwords for the Template image are the following:"
 #echo "Web interface (default network settings): $LOOKY_BASEURL"
-echo "Shell/SSH: looky/loo"
+echo "Shell/SSH: temp/late"

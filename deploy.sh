@@ -4,8 +4,6 @@
 VER='master'
 # Latest commit hash of packer-template
 LATEST_COMMIT=$(curl -s https://api.github.com/repos/SteveClement/packer-template/commits  |jq -r '.[0] | .sha')
-# Update time-stamp and make sure file exists
-touch /tmp/template-latest.sha
 # SHAsums to be computed
 SHA_SUMS="1 256 384 512"
 
@@ -22,11 +20,14 @@ REL_SERVER="templateServerFQDN"
 GPG_ENABLED=0
 GPG_KEY="0x9BE4AEE9"
 
+# Update time-stamp and make sure file exists
+touch /tmp/${PACKER_NAME}-latest.sha
+
 # Enable debug for packer, omit -debug to disable
 ##PACKER_DEBUG="-debug"
 
 # Enable logging for packer
-PACKER_LOG=1
+export PACKER_LOG=1
 
 # Make sure we have a current work directory
 PWD=`pwd`
@@ -37,8 +38,8 @@ mkdir -p ${PWD}/log
 vm_description='packer-template is a template to check the packer VM generation.'
 vm_version="${VER}"
 
-# Fetching latest LookyLoo LICENSE
-/usr/bin/wget -q -O /tmp/LICENSE-template https://raw.githubusercontent.com/SteveClement/packer-template/master/LICENSE
+# Fetching latest Template LICENSE
+/usr/bin/wget -q -O /tmp/LICENSE-${PACKERNAME} https://raw.githubusercontent.com/SteveClement/packer-template/master/LICENSE
 
 
 # Place holder, this fn() should be used to anything signing related
@@ -63,6 +64,7 @@ function removeAll()
   rm packer_virtualbox-iso_virtualbox-iso_sha384.checksum.asc
   rm packer_virtualbox-iso_virtualbox-iso_sha512.checksum.asc
   rm ${PACKER_VM}_${VER}@${LATEST_COMMIT}-vmware.zip.asc
+  rm /tmp/LICENSE-${PACKER_NAME}
 }
 
 removeAll
@@ -76,11 +78,11 @@ if [ "${LATEST_COMMIT}" != "$(cat /tmp/${PACKER_NAME}-latest.sha)" ]; then
   cat ${PACKER_NAME}.json| sed "s|\"vm_name\": \"${PACKER_VM}_demo\",|\"vm_name\": \"${PACKER_VM}_${VER}@${LATEST_COMMIT}\",|" > ${PACKER_NAME}-deploy.json
 
   # Build virtualbox VM set
-  PACKER_LOG_PATH="${PWD}/log/packerlog-vbox.txt"
+  export PACKER_LOG_PATH="${PWD}/log/packerlog-vbox.txt"
   /usr/local/bin/packer build ${PACKER_DEBUG} -var "vm_description=${vm_description}" -var "vm_version=${vm_version}" -only=virtualbox-iso ${PACKER_NAME}-deploy.json
 
   # Build vmware VM set
-  PACKER_LOG_PATH="${PWD}/log/packerlog-vmware.txt"
+  export PACKER_LOG_PATH="${PWD}/log/packerlog-vmware.txt"
   /usr/local/bin/packer build ${PACKER_DEBUG} -var "vm_description=${vm_description}" -var "vm_version=${vm_version}" -only=vmware-iso ${PACKER_NAME}-deploy.json
 
   # ZIPup all the vmware stuff

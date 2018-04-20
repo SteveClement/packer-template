@@ -32,8 +32,8 @@
 
         "disk_size": "{{user `disk_size`}}",
 
-        "iso_url": "http://cdimage.ubuntu.com/daily-live/current/bionic-desktop-amd64.iso",
-        "iso_checksum": "94a7ae6cb923296b004aa28a761f81523510998363f5b2c6c0569136fb8b3b8d",
+        "iso_url": "http://cdimage.ubuntu.com/ubuntu-server/daily-live/current/bionic-live-server-amd64.iso",
+        "iso_checksum": "9a7fef68d6faa732ab3e7a0cbba713e6c91ec0fbfe1e391a3f9c2f046ad4873c",
         "iso_checksum_type": "sha256",
 
         "http_directory" : "preseeds",
@@ -50,7 +50,7 @@
         "boot_command" : [
             "<esc><esc><enter><wait>",
             "/install/vmlinuz noapic text",
-            "preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg ",
+            "preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed_bionic.cfg ",
             "debian-installer=en_US auto locale=en_US kbd-chooser/method=us ",
             "hostname={{user `hostname`}} ",
             "fb=false debconf/frontend=noninteractive ",
@@ -70,8 +70,8 @@
         },
         "disk_size": "{{user `disk_size`}}",
 
-        "iso_url": "http://releases.ubuntu.com/17.10/ubuntu-17.10.1-server-amd64.iso",
-        "iso_checksum": "8ff73f1b622276758475c3bd5190b382774626de5a82c50930519381f6c3a3f8",
+        "iso_url": "http://cdimage.ubuntu.com/ubuntu-server/daily-live/current/bionic-live-server-amd64.iso",
+        "iso_checksum": "9a7fef68d6faa732ab3e7a0cbba713e6c91ec0fbfe1e391a3f9c2f046ad4873c",
         "iso_checksum_type": "sha256",
 
         "http_directory" : "preseeds",
@@ -88,7 +88,7 @@
         "boot_command" : [
             "<esc><esc><enter><wait>",
             "/install/vmlinuz noapic ",
-            "preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg ",
+            "preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed_bionic.cfg ",
             "debian-installer=en_US auto locale=en_US kbd-chooser/method=us ",
             "hostname={{user `hostname`}} ",
             "fb=false debconf/frontend=noninteractive ",
